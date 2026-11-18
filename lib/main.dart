@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/app_provider.dart';
-import 'screens/projects_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/storage_service.dart';
 import 'theme/app_theme.dart';
 
@@ -42,7 +42,7 @@ class AiSceneManagerApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      home: const ProjectsScreen(),
+      home: const SplashScreen(),
     );
   }
 }

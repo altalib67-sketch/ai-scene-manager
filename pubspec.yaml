@@ -53,6 +53,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,6 +69,49 @@ flutter:
 
   assets:
     - assets/sample_scenes.json
+    - assets/images/logo.png
+
+  # Arabic font (Tajawal, SIL OFL) bundled so Arabic renders the same on
+  # every device — and so widget-test screenshots show real Arabic text.
+  fonts:
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Tajawal-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+
+# Launcher icons (regenerate with: dart run flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#0D7377"
+    theme_color: "#0D7377"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"
+
+# Native splash screen (regenerate with: dart run flutter_native_splash:create)
+flutter_native_splash:
+  color: "#0D7377"
+  image: assets/images/logo.png
+  android_12:
+    color: "#0D7377"
+    image: assets/images/logo.png
+  web: true
+  ios: true
+  android: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

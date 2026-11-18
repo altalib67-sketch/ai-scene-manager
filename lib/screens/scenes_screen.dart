@@ -132,6 +132,13 @@ class ScenesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(10),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset('assets/images/logo.png'),
+          ),
+        ),
         title: Text(project.name),
         actions: [
           PopupMenuButton<ThemeMode>(

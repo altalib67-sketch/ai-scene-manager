@@ -7,6 +7,9 @@ import 'package:provider/provider.dart';
 
 import '../providers/app_provider.dart';
 import '../widgets/project_card.dart';
+import 'import_helper.dart';
+import 'paste_json_screen.dart';
+import 'prompt_builder_screen.dart';
 import 'scenes_screen.dart';
 
 /// Home screen: list of projects, create / import / open / delete.
@@ -75,7 +78,6 @@ class ProjectsScreen extends StatelessWidget {
   }
 
   Future<void> _importJson(BuildContext context) async {
-    final provider = context.read<AppProvider>();
     try {
       final files = await FilePicker.pickFiles(
         type: FileType.custom,
@@ -84,22 +86,11 @@ class ProjectsScreen extends StatelessWidget {
       if (files.isEmpty) return;
       final file = files.first;
       final content = utf8.decode(await file.readAsBytes());
-      final project = provider.importScenes(content, fileName: file.name);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'تم استيراد ${project.scenes.length} مشهداً إلى مشروع "${project.name}"',
-          ),
-        ),
-      );
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const ScenesScreen()),
-      );
-    } on FormatException catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
+      await ImportHelper.importJsonContent(
+        context,
+        content,
+        fileName: file.name,
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -107,6 +98,45 @@ class ProjectsScreen extends StatelessWidget {
         SnackBar(content: Text('تعذّر استيراد الملف: $e')),
       );
     }
+  }
+
+  Future<void> _showImportOptions(BuildContext context) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.upload_file),
+              title: const Text('استيراد ملف JSON'),
+              subtitle: const Text('اختر ملف JSON من الهاتف أو الكمبيوتر'),
+              onTap: () => Navigator.of(context).pop('file'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.content_paste),
+              title: const Text('لصق نص JSON'),
+              subtitle: const Text('الصق نص JSON منسوخاً من أداة ذكاء اصطناعي'),
+              onTap: () => Navigator.of(context).pop('paste'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!context.mounted) return;
+    if (choice == 'file') {
+      await _importJson(context);
+    } else if (choice == 'paste') {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const PasteJsonScreen()),
+      );
+    }
+  }
+
+  void _openPromptBuilder(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PromptBuilderScreen()),
+    );
   }
 
   Future<void> _loadSample(BuildContext context) async {
@@ -142,8 +172,20 @@ class ProjectsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(10),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset('assets/images/logo.png'),
+          ),
+        ),
         title: const Text('مشاريعي'),
         actions: [
+          IconButton(
+            tooltip: 'توليد أمر سيناريو',
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: () => _openPromptBuilder(context),
+          ),
           PopupMenuButton<ThemeMode>(
             tooltip: 'المظهر',
             icon: Icon(
@@ -176,8 +218,9 @@ class ProjectsScreen extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 900),
           child: provider.projects.isEmpty
               ? _EmptyState(
-                  onImport: () => _importJson(context),
+                  onImport: () => _showImportOptions(context),
                   onSample: () => _loadSample(context),
+                  onPromptBuilder: () => _openPromptBuilder(context),
                   onCreate: () async {
                     final name = await _askForName(
                       context,
@@ -236,7 +279,7 @@ class ProjectsScreen extends StatelessWidget {
                 FloatingActionButton.small(
                   heroTag: 'import',
                   tooltip: 'استيراد ملف JSON',
-                  onPressed: () => _importJson(context),
+                  onPressed: () => _showImportOptions(context),
                   child: const Icon(Icons.upload_file),
                 ),
                 const SizedBox(height: 12),
@@ -266,11 +309,13 @@ class _EmptyState extends StatelessWidget {
   final VoidCallback onImport;
   final VoidCallback onSample;
   final VoidCallback onCreate;
+  final VoidCallback onPromptBuilder;
 
   const _EmptyState({
     required this.onImport,
     required this.onSample,
     required this.onCreate,
+    required this.onPromptBuilder,
   });
 
   @override
@@ -280,10 +325,14 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.movie_creation_outlined,
-            size: 72,
-            color: Theme.of(context).colorScheme.primary,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 96,
+              height: 96,
+              fit: BoxFit.cover,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -301,6 +350,12 @@ class _EmptyState extends StatelessWidget {
             onPressed: onImport,
             icon: const Icon(Icons.upload_file),
             label: const Text('استيراد ملف JSON'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onPromptBuilder,
+            icon: const Icon(Icons.auto_awesome),
+            label: const Text('توليد أمر سيناريو من فكرة'),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(

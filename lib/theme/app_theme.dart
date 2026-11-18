@@ -7,6 +7,7 @@ class AppTheme {
 
   static ThemeData get light {
     return ThemeData(
+      fontFamily: 'Tajawal',
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor,
         brightness: Brightness.light,
@@ -21,6 +22,7 @@ class AppTheme {
 
   static ThemeData get dark {
     return ThemeData(
+      fontFamily: 'Tajawal',
       colorScheme: ColorScheme.fromSeed(
         seedColor: seedColor,
         brightness: Brightness.dark,

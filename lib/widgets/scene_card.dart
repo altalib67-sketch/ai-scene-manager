@@ -39,25 +39,68 @@ class _SceneCardState extends State<SceneCard> {
     );
   }
 
-  Widget _section(String label, String value, {bool selectable = false}) {
+  Widget _sectionHeader(IconData icon, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: colorScheme.primary),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _section(
+    IconData icon,
+    String label,
+    String value, {
+    bool selectable = false,
+    bool quote = false,
+    bool codeBlock = false,
+  }) {
     if (value.trim().isEmpty) return const SizedBox.shrink();
+    final colorScheme = Theme.of(context).colorScheme;
     final body = selectable
         ? SelectableText(value, style: const TextStyle(height: 1.6))
         : Text(value, style: const TextStyle(height: 1.6));
+    final Widget content;
+    if (quote) {
+      content = Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: body,
+      );
+    } else if (codeBlock) {
+      content = Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: body,
+      );
+    } else {
+      content = body;
+    }
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          body,
+          _sectionHeader(icon, label),
+          const SizedBox(height: 6),
+          content,
         ],
       ),
     );
@@ -117,13 +160,20 @@ class _SceneCardState extends State<SceneCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _section('الوصف', scene.description),
-                  _section('الحوار', scene.dialogue),
-                  _section('الشخصيات', scene.characters),
-                  _section('Prompt', scene.prompt, selectable: true),
-                  _section('حركة الكاميرا', scene.cameraMovement),
+                  _section(Icons.description_outlined, 'الوصف',
+                      scene.description),
+                  _section(Icons.format_quote_outlined, 'الحوار',
+                      scene.dialogue,
+                      quote: true),
+                  _section(Icons.people_outline, 'الشخصيات',
+                      scene.characters),
+                  _section(Icons.terminal_outlined, 'Prompt', scene.prompt,
+                      selectable: true, codeBlock: true),
+                  _section(Icons.videocam_outlined, 'حركة الكاميرا',
+                      scene.cameraMovement),
                   for (final entry in scene.extras.entries)
-                    _section(entry.key, entry.value.toString()),
+                    _section(Icons.label_outline, entry.key,
+                        entry.value.toString()),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
